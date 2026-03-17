@@ -12,6 +12,10 @@ namespace SWD302_Project_HostelManagement
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // Register custom services
+            builder.Services.AddScoped<SWD302_Project_HostelManagement.Services.EmailDeliveryService>();
+            builder.Services.AddScoped<SWD302_Project_HostelManagement.Proxies.EmailProxy>();
+
             // Add DbContext - Choose database provider based on environment
             builder.Services.AddDbContext<SWD302_Project_HostelManagement.Data.AppDbContext>(options =>
             {

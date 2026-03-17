@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SWD302_Project_HostelManagement.Data;
 using SWD302_Project_HostelManagement.Models;
+using SWD302_Project_HostelManagement.Proxies;
 
 namespace SWD302_Project_HostelManagement.Controllers
 {
@@ -15,10 +16,14 @@ namespace SWD302_Project_HostelManagement.Controllers
     public class BookingRequestsController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly EmailProxy _emailProxy;
+        private readonly ILogger<BookingRequestsController> _logger;
 
-        public BookingRequestsController(AppDbContext context)
+        public BookingRequestsController(AppDbContext context, EmailProxy emailProxy, ILogger<BookingRequestsController> logger)
         {
             _context = context;
+            _emailProxy = emailProxy;
+            _logger = logger;
         }
 
         // GET: BookingRequests
@@ -66,57 +71,58 @@ namespace SWD302_Project_HostelManagement.Controllers
                     .ThenInclude(t => t.Account)
                 .FirstOrDefaultAsync(b => b.BookingId == id);
 
-            if (booking == null)
+            // if booking.isPending() then
+            if (booking != null && booking.Status == "Pending")
             {
-                TempData["Error"] = "Booking request not found.";
-                return RedirectToAction("Index");
+                var room = booking.Room;
+
+                // if room.isAvailable() then
+                if (room != null && room.Status == "Available")
+                {
+                    booking.Status = "Approved";
+                    booking.UpdatedDate = DateTime.UtcNow;
+
+                    room.Status = "Occupied";
+                    room.UpdatedAt = DateTime.UtcNow;
+
+                    var tenant = booking.Tenant;
+                    string email = tenant?.Account?.Email;
+
+                    if (!string.IsNullOrWhiteSpace(email))
+                    {
+                        // M9: Lưu Notification record
+                        var notification = new Notification
+                        {
+                            BookingId = booking.BookingId,
+                            RecipientEmail = email,
+                            Subject = $"Booking Approved - Room {booking.Room.RoomNumber}",
+                            MessageContent = $"Dear {booking.Tenant.Name}, your booking request for room {booking.Room.RoomNumber} has been approved.",
+                            Type = "BookingApproved",
+                            Status = "Pending",
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await _context.Notifications.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+
+                        // M10: Gửi email qua EmailProxy
+                        bool emailSent = _emailProxy.SendEmail(email, notification);
+
+                        if (emailSent)
+                        {
+                            notification.Status = "Sent";
+                            notification.SentAt = DateTime.UtcNow;
+                            _context.Notifications.Update(notification);
+                            await _context.SaveChangesAsync();
+                            TempData["Success"] = $"Booking #{id} approved successfully and email sent to tenant.";
+                        }
+                        else
+                        {
+                            TempData["Warning"] = $"Booking #{id} approved, but email notification failed to send.";
+                        }
+                    }
+                }
             }
 
-            if (booking.Status != "Pending")
-            {
-                TempData["Error"] = "Only pending bookings can be approved.";
-                return RedirectToAction("Index");
-            }
-
-            if (booking.Room.Status != "Available")
-            {
-                TempData["Error"] = "Room is no longer available.";
-                return RedirectToAction("Index");
-            }
-
-            booking.Status = "Approved";
-            booking.UpdatedDate = DateTime.UtcNow;
-
-            booking.Room.Status = "Occupied";
-            booking.Room.UpdatedAt = DateTime.UtcNow;
-
-            //var log = new RoomUpdateLog
-            //{
-            //    RoomId = booking.Room.RoomId,
-            //    BookingId = booking.BookingId,
-            //    ChangedByOwnerId = int.Parse(User.FindFirst("ProfileId")?.Value ?? "0"),
-            //    StatusBefore = "Available",
-            //    StatusAfter = "Occupied",
-            //    ChangedAt = DateTime.UtcNow
-            //};
-            //await _context.RoomUpdateLogs.AddAsync(log);
-
-            var tenantEmail = booking.Tenant.Account.Email;
-            var notification = new Notification
-            {
-                BookingId = booking.BookingId,
-                RecipientEmail = tenantEmail,
-                Subject = $"Booking Approved - Room {booking.Room.RoomNumber}",
-                MessageContent = $"Dear {booking.Tenant.Name}, your booking request for room {booking.Room.RoomNumber} has been approved.",
-                Type = "BookingApproved",
-                Status = "Pending",
-                CreatedAt = DateTime.UtcNow
-            };
-            await _context.Notifications.AddAsync(notification);
-
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = $"Booking #{id} approved successfully.";
             return RedirectToAction("Index");
         }
 
@@ -154,38 +160,51 @@ namespace SWD302_Project_HostelManagement.Controllers
                     .ThenInclude(t => t.Account)
                 .FirstOrDefaultAsync(b => b.BookingId == id);
 
-            if (booking == null)
+            // if booking.isPending() then
+            if (booking != null && booking.Status == "Pending")
             {
-                TempData["Error"] = "Booking request not found.";
-                return RedirectToAction("Index");
+                booking.Status = "Rejected";
+                booking.RejectReason = bookingRequest.RejectReason;
+                booking.UpdatedDate = DateTime.UtcNow;
+
+                var tenant = booking.Tenant;
+                string email = tenant?.Account?.Email;
+
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    // M1A.6: Lưu Notification record
+                    // M1A.7: Notification xác nhận tạo thành công
+                    var notification = new Notification
+                    {
+                        BookingId = booking.BookingId,
+                        RecipientEmail = email,
+                        Subject = $"Booking Rejected - Room {booking.Room.RoomNumber}",
+                        MessageContent = $"Dear {booking.Tenant.Name}, your booking request has been rejected. Reason: {bookingRequest.RejectReason}",
+                        Type = "BookingRejected",
+                        Status = "Pending",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _context.Notifications.AddAsync(notification);
+                    await _context.SaveChangesAsync();
+
+                    // M1A.8: Gửi email qua EmailProxy
+                    bool emailSent = _emailProxy.SendEmail(email, notification);
+
+                    if (emailSent)
+                    {
+                        notification.Status = "Sent";
+                        notification.SentAt = DateTime.UtcNow;
+                        _context.Notifications.Update(notification);
+                        await _context.SaveChangesAsync();
+                        TempData["Success"] = $"Booking #{id} rejected and email sent to tenant.";
+                    }
+                    else
+                    {
+                        TempData["Warning"] = $"Booking #{id} rejected, but email notification failed to send.";
+                    }
+                }
             }
 
-            if (booking.Status != "Pending")
-            {
-                TempData["Error"] = "Only pending bookings can be rejected.";
-                return RedirectToAction("Index");
-            }
-
-            booking.Status = "Rejected";
-            booking.RejectReason = bookingRequest.RejectReason;
-            booking.UpdatedDate = DateTime.UtcNow;
-
-            var tenantEmail = booking.Tenant.Account.Email;
-            var notification = new Notification
-            {
-                BookingId = booking.BookingId,
-                RecipientEmail = tenantEmail,
-                Subject = $"Booking Rejected - Room {booking.Room.RoomNumber}",
-                MessageContent = $"Dear {booking.Tenant.Name}, your booking request has been rejected. Reason: {bookingRequest.RejectReason}",
-                Type = "BookingRejected",
-                Status = "Pending",
-                CreatedAt = DateTime.UtcNow
-            };
-            await _context.Notifications.AddAsync(notification);
-
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = $"Booking #{id} rejected.";
             return RedirectToAction("Index");
         }
 
