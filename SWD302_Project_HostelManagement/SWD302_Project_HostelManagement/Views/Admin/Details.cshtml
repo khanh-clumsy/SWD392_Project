@@ -1,0 +1,138 @@
+@model SWD302_Project_HostelManagement.Models.Hostel
+
+@{
+    ViewData["Title"] = "Chi tiết Hostel chờ duyệt - " + Model.Name;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Danh sách chờ duyệt</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h2 class="card-title h4 mb-0">Thông tin chi tiết Hostel</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3 border-bottom pb-2">
+                        <div class="col-sm-4 fw-bold">Tên Hostel:</div>
+                        <div class="col-sm-8">@Model.Name</div>
+                    </div>
+                    <div class="row mb-3 border-bottom pb-2">
+                        <div class="col-sm-4 fw-bold">Địa chỉ:</div>
+                        <div class="col-sm-8">@Model.Address</div>
+                    </div>
+                    <div class="row mb-3 border-bottom pb-2">
+                        <div class="col-sm-4 fw-bold">Chủ sở hữu:</div>
+                        <div class="col-sm-8">
+                            <div>@Model.Owner.Name</div>
+                            <div class="text-muted small">@Model.Owner.Email | @Model.Owner.PhoneNumber</div>
+                            @if (!string.IsNullOrEmpty(Model.Owner.BusinessLicense))
+                            {
+                                <div class="text-muted small">Giấy phép kinh doanh: @Model.Owner.BusinessLicense</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="row mb-3 border-bottom pb-2">
+                        <div class="col-sm-4 fw-bold">Mô tả:</div>
+                        <div class="col-sm-8">@(string.IsNullOrEmpty(Model.Description) ? "Không có mô tả." : Model.Description)</div>
+                    </div>
+                    <div class="row mb-3 border-bottom pb-2">
+                        <div class="col-sm-4 fw-bold">Ngày đăng ký:</div>
+                        <div class="col-sm-8">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                    </div>
+                    
+                    <h3 class="h5 mt-4 mb-3">Danh sách phòng (@Model.Rooms.Count)</h3>
+                    @if (Model.Rooms.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Số phòng</th>
+                                        <th>Diện tích</th>
+                                        <th>Giá thuê</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var room in Model.Rooms)
+                                    {
+                                        <tr>
+                                            <td>@room.RoomNumber</td>
+                                            <td>@room.Area m²</td>
+                                            <td>@room.PricePerMonth.ToString("N0") VNĐ</td>
+                                            <td><span class="badge bg-info">@room.Status</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted italic">Chưa có thông tin phòng.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                <div class="card-body text-center py-4">
+                    <h4 class="mb-4">Phê duyệt Hostel</h4>
+                    
+                    <form asp-action="Approve" asp-route-id="@Model.HostelId" method="post" class="mb-3 d-grid">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>Phê duyệt (Approve)
+                        </button>
+                    </form>
+                    
+                    <button type="button" class="btn btn-outline-danger btn-lg d-grid w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="bi bi-x-circle me-2"></i>Từ chối (Reject)
+                    </button>
+                    
+                    <div class="mt-4">
+                        <a asp-action="Index" class="btn btn-link">Quay lại danh sách</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rejection Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel">Lý do từ chối phê duyệt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <form asp-action="Reject" asp-route-id="@Model.HostelId" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="rejectReason" class="form-label fw-bold">Vui lòng nhập lý do từ chối (Gửi đến chủ sở hữu):</label>
+                        <textarea class="form-control" id="rejectReason" name="rejectReason" rows="4" required placeholder="Nhập lý do chi tiết để chủ sở hữu có thể sửa đổi..."></textarea>
+                        @Html.ValidationMessage("RejectReason", "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+}

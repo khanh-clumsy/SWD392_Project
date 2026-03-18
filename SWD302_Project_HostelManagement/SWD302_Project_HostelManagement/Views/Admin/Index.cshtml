@@ -1,0 +1,68 @@
+@model IEnumerable<SWD302_Project_HostelManagement.Models.Hostel>
+
+@{
+    ViewData["Title"] = "Pending Hostel Approvals";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Duyệt đăng ký Hostel mới</h1>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted">Hiện không có yêu cầu đăng ký hostel nào đang chờ duyệt.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tên Hostel</th>
+                                <th>Chủ sở hữu</th>
+                                <th>Địa chỉ</th>
+                                <th>Ngày đăng ký</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@item.Name</td>
+                                    <td>@item.Owner.Name (@item.Owner.Email)</td>
+                                    <td>@item.Address</td>
+                                    <td>@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@item.HostelId" class="btn btn-primary btn-sm">
+                                            Xem chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
