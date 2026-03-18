@@ -1,0 +1,104 @@
+@model SWD302_Project_HostelManagement.Models.BookingRequest
+
+@{
+    ViewData["Title"] = "Cancel Booking";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Tenant" asp-action="BookingRequestIndex">My Bookings</a>
+                    </li>
+                    <li class="breadcrumb-item active">Cancel Booking</li>
+                </ol>
+            </nav>
+
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-x-circle me-2"></i>Cancel Booking Request
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Are you sure you want to cancel the following booking request?
+                    </p>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Booking ID</dt>
+                        <dd class="col-sm-8">#@Model.BookingId</dd>
+
+                        <dt class="col-sm-4">Hostel</dt>
+                        <dd class="col-sm-8">@Model.Room?.Hostel?.Name</dd>
+
+                        <dt class="col-sm-4">Room</dt>
+                        <dd class="col-sm-8">
+                            @Model.Room?.RoomNumber
+                            @if (!string.IsNullOrEmpty(Model.Room?.RoomType))
+                            {
+                                <span class="text-muted">(@Model.Room.RoomType)</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Request Type</dt>
+                        <dd class="col-sm-8">@Model.RequestType</dd>
+
+                        <dt class="col-sm-4">Check-in Date</dt>
+                        <dd class="col-sm-8">
+                            @(Model.StartDate?.ToString("dd/MM/yyyy") ?? "—")
+                        </dd>
+
+                        <dt class="col-sm-4">Check-out Date</dt>
+                        <dd class="col-sm-8">
+                            @(Model.EndDate?.ToString("dd/MM/yyyy") ?? "—")
+                        </dd>
+
+                        <dt class="col-sm-4">Current Status</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-warning text-dark">@Model.Status</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Submitted</dt>
+                        <dd class="col-sm-8">
+                            @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                        </dd>
+                    </dl>
+
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Note:</strong> Only <strong>Pending</strong> bookings can be
+                        cancelled. Once cancelled, the status cannot be reverted to Pending.
+                    </div>
+                </div>
+
+                <div class="card-footer d-flex gap-2">
+                    @* UC7 - M2: Gửi Cancel Request → CancelCoordinator.cancelBooking() *@
+                    <form asp-controller="Tenant"
+                          asp-action="CancelBooking"
+                          asp-route-id="@Model.BookingId"
+                          method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle me-1"></i>Yes, Cancel Booking
+                        </button>
+                    </form>
+
+                    <a asp-controller="Tenant"
+                       asp-action="BookingRequestIndex"
+                       class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back to My Bookings
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
