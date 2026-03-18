@@ -3,9 +3,25 @@
 @{
     ViewData["Title"] = "Home";
     bool isTenant = User.IsInRole("Tenant");
+    bool isOwner = User.IsInRole("HostelOwner");
 }
 
 <div class="container mt-4">
+
+    <!-- 🔥 UC09 (chỉ thêm, không phá UI) -->
+    @if (isOwner)
+    {
+        <div class="mb-4">
+            <h5>🏠 Add Hostel</h5>
+            
+
+            <a href="/Hostel/Create" class="btn btn-primary btn-sm">
+                + Add Hostel
+            </a>
+        </div>
+    }
+
+    <!-- UI CŨ GIỮ NGUYÊN -->
     <h2>Available Rooms</h2>
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
@@ -28,6 +44,7 @@
                     <td>@room.Hostel?.Name</td>
                     <td>@room.PricePerMonth.ToString("N0") VND</td>
                     <td><span class="badge bg-success">@room.Status</span></td>
+
                     @if (isTenant)
                     {
                         <td>
