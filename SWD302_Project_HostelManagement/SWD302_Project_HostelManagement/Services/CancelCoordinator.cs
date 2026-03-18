@@ -99,7 +99,10 @@ namespace SWD302_Project_HostelManagement.Services
         private async Task HandleCancelSuccessAsync(BookingRequest booking)
         {
             // M7: Lấy email của tenant — lấy trực tiếp từ Tenant.Email
-            string? email = booking.Tenant?.Email;
+            //string? email = booking.Tenant?.Email;
+            var owner = await _context.HostelOwners
+    .FirstOrDefaultAsync(o => o.OwnerId == booking.Room.OwnerId);
+            string? email = owner?.Email;
             if (string.IsNullOrWhiteSpace(email))
             {
                 _logger.LogWarning(
@@ -115,7 +118,6 @@ namespace SWD302_Project_HostelManagement.Services
                 RecipientEmail = email,
                 Subject = $"Booking Cancelled - Room {booking.Room?.RoomNumber}",
                 MessageContent =
-                    $"Dear {booking.Tenant?.Name}, " +
                     $"your booking request (ID: #{booking.BookingId}) " +
                     $"for room {booking.Room?.RoomNumber} has been successfully cancelled.",
                 Type = "BookingCancelled",
