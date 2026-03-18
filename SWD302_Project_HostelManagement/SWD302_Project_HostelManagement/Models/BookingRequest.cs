@@ -18,6 +18,8 @@ public partial class BookingRequest
 
     public DateOnly? EndDate { get; set; }
 
+    public decimal DepositAmount { get; set; }
+
     public string Status { get; set; }
 
     public string? RejectReason { get; set; }

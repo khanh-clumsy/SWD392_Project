@@ -68,10 +68,10 @@
                                        value="@booking.BookingId" />
                                 <input type="hidden"
                                        name="amount"
-                                       value="@(booking.Room?.PricePerMonth ?? 0M)" />
+                                       value="@booking.DepositAmount" />
                                 <button type="submit"
                                         class="btn btn-success btn-sm">
-                                    💳 Pay Now
+                                    💳 Pay Now (@booking.DepositAmount:N0 VND)
                                 </button>
                             </form>
                         }
