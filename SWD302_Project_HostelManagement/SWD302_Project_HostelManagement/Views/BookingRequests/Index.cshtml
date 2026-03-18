@@ -14,10 +14,10 @@
     </div>
 }
 
-@if (TempData["Error"] != null)
+@if (TempData["Warning"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
+        @TempData["Warning"]
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
@@ -97,6 +97,9 @@
                 {
                     <form asp-action="Approve" asp-route-id="@item.BookingId" method="post" style="display:inline;">
                         <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this booking?')">Approve</button>
+                    </form>
+                        <form asp-action="ApproveWithVerification" asp-route-id="@item.BookingId" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Approve with verification check?')">Approve (Verify)</button>
                     </form>
                     <a asp-action="Reject" asp-route-id="@item.BookingId" class="btn btn-sm btn-warning">Reject</a>
                 }

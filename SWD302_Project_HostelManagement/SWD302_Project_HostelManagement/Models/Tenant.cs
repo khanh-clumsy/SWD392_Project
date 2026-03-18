@@ -13,6 +13,7 @@ public partial class Tenant
     public string Status { get; set; } = "Active";
     public string? AvatarUrl { get; set; }
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+    public bool IsVerified { get; set; } = false;
 
     // ✅ Thông tin profile riêng của Tenant
     public string Name { get; set; } = null!;
@@ -40,5 +41,14 @@ public partial class Tenant
     public string GetEmail()
     {
         return Email;
+    }
+
+    /// <summary>
+    /// Checks the verification status of this tenant
+    /// </summary>
+    /// <returns>True if tenant is verified, false otherwise</returns>
+    public bool CheckVerificationStatus()
+    {
+        return IsVerified;
     }
 }

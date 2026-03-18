@@ -13,6 +13,7 @@ using SWD302_Project_HostelManagement.Proxies;
 
 namespace SWD302_Project_HostelManagement.Controllers
 {
+    [Route("BookingRequests")]
     [Authorize(Roles = "HostelOwner")]
     public class BookingRequestsController : Controller
     {
@@ -28,6 +29,7 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // GET: BookingRequests
+        [HttpGet("Index")]
         public async Task<IActionResult> Index()
         {
             // Get OwnerId from ClaimTypes.NameIdentifier (set during login)
@@ -46,6 +48,7 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // GET: BookingRequests/Details/5
+        [HttpGet("Details/{id}")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -66,8 +69,8 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // POST: BookingRequests/Approve/5
-        [HttpPost]
-        public async Task<IActionResult> Approve(int id)
+        [HttpPost("Approve/{id}")]
+        public async Task<IActionResult> ApproveBooking(int id)
         {
             var booking = await _context.BookingRequests
                 .Include(b => b.Room)
@@ -106,7 +109,7 @@ namespace SWD302_Project_HostelManagement.Controllers
                             // notification = Notification.createRecord(bookingId, email, "Booking Approved")
                             var notification = Notification.CreateRecord(booking.BookingId, email, "Booking Approved");
                             notification.MessageContent = $"Dear {tenant.Name}, your booking request for room {booking.Room.RoomNumber} has been approved.";
-                            
+
                             await _context.Notifications.AddAsync(notification);
                             await _context.SaveChangesAsync();
 
@@ -134,8 +137,83 @@ namespace SWD302_Project_HostelManagement.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET: BookingRequests/Reject/5
+        // POST: BookingRequests/ApproveWithVerification/5 (LUỒNG M4A: Kiểm tra xác minh tenant)
+        [HttpPost("ApproveWithVerification/{id}")]
+        public async Task<IActionResult> ApproveBookingWithVerification(int id)
+        {
+            var booking = await _context.BookingRequests
+                .Include(b => b.Room)
+                .Include(b => b.Tenant)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+
+            if (booking != null && booking.Status == "Pending")
+            {
+                int tenantId = booking.GetTenantId();
+                var tenant = await _context.Tenants
+                    .FirstOrDefaultAsync(t => t.TenantId == tenantId);
+
+                if (tenant != null)
+                {
+                    string email = tenant.GetEmail();
+
+                    // LUỒNG M4A: Kiểm tra xác minh tenant
+                    if (!tenant.CheckVerificationStatus())
+                    {
+                        if (!string.IsNullOrWhiteSpace(email))
+                        {
+                            // M4A.1: Booking Coordinator -> Notification: Create Notification Record
+                            var verificationNotif = Notification.CreateRecord(booking.BookingId, email, "Identity Verification Required");
+                            verificationNotif.MessageContent = $"Dear {tenant.Name}, your booking request requires identity verification before approval. Please complete your identity verification.";
+
+                            await _context.Notifications.AddAsync(verificationNotif);
+                            await _context.SaveChangesAsync();
+
+                            _emailProxy.SendEmail(email, verificationNotif);
+                            TempData["Warning"] = $"Booking #{id} requires tenant identity verification before approval.";
+                        }
+
+                        return RedirectToAction("Index");
+                    }
+
+                    var room = booking.Room;
+
+                    if (room != null && room.Status == "Available")
+                    {
+                        booking.UpdateStatus("PendingPayment");
+                        room.Status = "Occupied";
+                        room.UpdatedAt = DateTime.UtcNow;
+
+                        if (!string.IsNullOrWhiteSpace(email))
+                        {
+                            var notification = Notification.CreateRecord(booking.BookingId, email, "Booking Approved");
+                            notification.MessageContent = $"Dear {tenant.Name}, your booking request for room {booking.Room.RoomNumber} has been approved.";
+
+                            await _context.Notifications.AddAsync(notification);
+                            await _context.SaveChangesAsync();
+
+                            bool emailSent = _emailProxy.SendEmail(email, notification);
+
+                            if (emailSent)
+                            {
+                                notification.Status = "Sent";
+                                notification.SentAt = DateTime.UtcNow;
+                                _context.Notifications.Update(notification);
+                                await _context.SaveChangesAsync();
+                                TempData["Success"] = $"Booking #{id} approved successfully and email sent to tenant.";
+                            }
+                            else
+                            {
+                                TempData["Warning"] = $"Booking #{id} approved, but email notification failed to send.";
+                            }
+                        }
+                    }
+                }
+            }
+
+            return RedirectToAction("Index");
+        }
         [HttpGet]
+        [Route("Reject/{id}")]
         public async Task<IActionResult> Reject(int id)
         {
             var booking = await _context.BookingRequests
@@ -158,9 +236,9 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // POST: BookingRequests/Reject/5
-        [HttpPost]
+        [HttpPost("Reject/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Reject(int id, [Bind("BookingId,RejectReason")] BookingRequest bookingRequest)
+        public async Task<IActionResult> RejectBooking(int id, [Bind("BookingId,RejectReason")] BookingRequest bookingRequest)
         {
             var booking = await _context.BookingRequests
                 .Include(b => b.Room)
@@ -221,6 +299,7 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // GET: BookingRequests/Create
+        [HttpGet("Create")]
         public IActionResult Create()
         {
             ViewData["RoomId"] = new SelectList(_context.Rooms, "RoomId", "RoomId");
@@ -229,7 +308,7 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // POST: BookingRequests/Create
-        [HttpPost]
+        [HttpPost("Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("BookingId,RoomId,TenantId,RequestType,StartDate,EndDate,Status,RejectReason,CreatedDate,UpdatedDate")] BookingRequest bookingRequest)
         {
@@ -245,6 +324,7 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // GET: BookingRequests/Edit/5
+        [HttpGet("Edit/{id}")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -263,7 +343,7 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // POST: BookingRequests/Edit/5
-        [HttpPost]
+        [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BookingId,RoomId,TenantId,RequestType,StartDate,EndDate,Status,RejectReason,CreatedDate,UpdatedDate")] BookingRequest bookingRequest)
         {
@@ -298,6 +378,7 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // GET: BookingRequests/Delete/5
+        [HttpGet("Delete/{id}")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -318,7 +399,7 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
 
         // POST: BookingRequests/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost("Delete/{id}"), ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
