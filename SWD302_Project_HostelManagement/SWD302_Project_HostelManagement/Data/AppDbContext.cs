@@ -164,6 +164,9 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("name");
             entity.Property(e => e.Address)
                 .HasColumnName("address");
+            entity.Property(e => e.Price)
+                .HasPrecision(12, 2)
+                .HasColumnName("price");
             entity.Property(e => e.Description)
                 .HasColumnName("description");
             entity.Property(e => e.Status)

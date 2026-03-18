@@ -116,37 +116,31 @@ public static class DbSeeder
         {
             new Hostel
             {
-                OwnerId = owners[0].OwnerId,
-                Name    = "Nhà Trọ Ánh Dương",
-                Address = "123 Nguyễn Trãi, Quận 1, TP.HCM",
-                Description = "Nhà trọ sạch sẽ, an ninh, gần trường đại học",
-                Status  = "Approved",
-                CreatedDate = DateTime.UtcNow.AddDays(-30),
-                UpdatedDate = DateTime.UtcNow.AddDays(-25)
-            },
-            new Hostel
-            {
-                OwnerId = owners[0].OwnerId,
-                Name    = "Phòng Trọ Bình Minh",
-                Address = "456 Lê Lợi, Quận 3, TP.HCM",
-                Description = "Phòng trọ tiện nghi, có thang máy, wifi tốc độ cao",
-                Status  = "PendingApproval",  // chưa được duyệt
-                CreatedDate = DateTime.UtcNow.AddDays(-5),
-                UpdatedDate = DateTime.UtcNow.AddDays(-5)
-            },
-            new Hostel
-            {
-                OwnerId = owners[1].OwnerId,
-                Name    = "Căn Hộ Mini Hoàng Gia",
-                Address = "789 Điện Biên Phủ, Quận Bình Thạnh, TP.HCM",
-                Description = "Căn hộ mini full nội thất, view đẹp, bảo vệ 24/7",
-                Status  = "Approved",
-                CreatedDate = DateTime.UtcNow.AddDays(-20),
-                UpdatedDate = DateTime.UtcNow.AddDays(-15)
-            }
-        };
-        await context.Hostels.AddRangeAsync(hostels);
-        await context.SaveChangesAsync();
+                new Hostel
+                {
+                    OwnerId = owners[0].OwnerId,
+                    Name = "Cozy Hostel Downtown",
+                    Address = "123 Nguyen Hue, District 1, HCMC",
+                    Price = 1950000,
+                    Description = "Budget-friendly hostel in the heart of downtown",
+                    Status = "Approved",
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow
+                },
+                new Hostel
+                {
+                    OwnerId = owners[1].OwnerId,
+                    Name = "Modern City Hostel",
+                    Address = "456 Tran Hung Dao, District 5, HCMC",
+                    Price = 1750000,
+                    Description = "Modern facilities with shared kitchens",
+                    Status = "Approved",
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow
+                }
+            };
+            await context.Hostels.AddRangeAsync(hostels);
+            await context.SaveChangesAsync();
 
         // =============================================
         // 5. ROOMS – đủ trạng thái để test UC8

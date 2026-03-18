@@ -37,6 +37,7 @@
                 <th>Hostel</th>
                 <th>Price/Month</th>
                 <th>Status</th>
+                <th>Details</th>
                 @if (isTenant)
                 {
                     <th>Action</th>
@@ -47,10 +48,23 @@
             @foreach (var room in Model)
             {
                 <tr>
-                    <td>@room.RoomId</td>
-                    <td>@room.Hostel?.Name</td>
+                    <td>
+                        <a asp-controller="Room" asp-action="Details" asp-route-id="@room.RoomId" class="text-decoration-none fw-semibold">
+                            @room.RoomId
+                        </a>
+                    </td>
+                    <td>
+                        <a asp-controller="Room" asp-action="Details" asp-route-id="@room.RoomId" class="text-decoration-none">
+                            @room.Hostel?.Name
+                        </a>
+                    </td>
                     <td>@room.PricePerMonth.ToString("N0") VND</td>
                     <td><span class="badge bg-success">@room.Status</span></td>
+                    <td>
+                        <a asp-controller="Room" asp-action="Details" asp-route-id="@room.RoomId" class="btn btn-outline-secondary btn-sm">
+                            View Details
+                        </a>
+                    </td>
 
                     @if (isTenant)
                     {
