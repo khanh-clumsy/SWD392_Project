@@ -1,0 +1,108 @@
+﻿@model IEnumerable<SWD302_Project_HostelManagement.Models.Room>
+    @{
+    ViewData["Title"] = "Quản lý Phòng";
+    var hostel = ViewBag.Hostel as SWD302_Project_HostelManagement.Models.Hostel;
+    }
+
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Hostel" asp-action="Index">Hostel</a>
+                </li>
+                <li class="breadcrumb-item active">@hostel?.Name</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>🛏 Phòng — @hostel?.Name</h2>
+        <a asp-action="Create"
+           asp-route-hostelId="@hostel?.HostelId"
+           class="btn btn-primary">
+            + Thêm phòng
+        </a>
+        </div>
+
+        @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+        @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+        @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show">
+            @TempData["Info"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+        @if (!Model.Any())
+    {
+        <div class="alert alert-info">Hostel chưa có phòng nào.</div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Số phòng</th>
+                    <th>Loại phòng</th>
+                    <th>Sức chứa</th>
+                    <th>Giá/tháng (VNĐ)</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{int stt = 1;}
+                @foreach (var r in Model)
+                {
+                <tr>
+                    <td>@stt++</td>
+                    <td><strong>@r.RoomNumber</strong></td>
+                    <td>@r.RoomType</td>
+                    <td>@r.Capacity người</td>
+                    <td>@r.PricePerMonth.ToString("N0")</td>
+                    <td>
+                        @{
+                                var (cls, lbl) = r.Status switch
+                                {
+                                    "Available"   => ("bg-success",           "Trống"),
+                                    "Reserved"    => ("bg-info text-dark",    "Đã đặt"),
+                                    "Occupied"    => ("bg-primary",           "Đang ở"),
+                                    "Maintenance" => ("bg-warning text-dark", "Bảo trì"),
+                                    "Inactive"    => ("bg-secondary",         "Ngừng HĐ"),
+                                    _             => ("bg-secondary",          r.Status)
+                                };
+                        }
+                        <span class="badge @cls">@lbl</span>
+                    </td>
+                    <td>
+                        @if (r.Status != "Reserved" && r.Status != "Occupied")
+                            {
+                        <a asp-action="ChangeStatus" asp-route-id="@r.RoomId"
+                           class="btn btn-sm btn-outline-warning">
+                            Đổi trạng thái
+                        </a>
+                            }
+                        <a asp-action="Details" asp-route-id="@r.RoomId"
+                           class="btn btn-sm btn-outline-secondary ms-1">
+                            Chi tiết
+                        </a>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    }
+    </div>

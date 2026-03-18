@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,9 +30,13 @@ namespace SWD302_Project_HostelManagement.Controllers
         // GET: BookingRequests
         public async Task<IActionResult> Index()
         {
-            var ownerIdClaim = User.FindFirst("ProfileId")?.Value;
-            if (!int.TryParse(ownerIdClaim, out int ownerId))
+            // Get OwnerId from ClaimTypes.NameIdentifier (set during login)
+            var ownerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(ownerIdStr, out int ownerId))
+            {
+                _logger.LogWarning("Invalid or missing OwnerId claim for user");
                 return RedirectToAction("Login", "Auth");
+            }
 
             var appDbContext = _context.BookingRequests
                 .Include(b => b.Room)
@@ -78,7 +83,7 @@ namespace SWD302_Project_HostelManagement.Controllers
                 if (room != null && room.Status == "Available")
                 {
                     // booking.updateStatus("Approved")
-                    booking.UpdateStatus("Approved");
+                    booking.UpdateStatus("PendingPayment");
 
                     room.Status = "Occupied";
                     room.UpdatedAt = DateTime.UtcNow;

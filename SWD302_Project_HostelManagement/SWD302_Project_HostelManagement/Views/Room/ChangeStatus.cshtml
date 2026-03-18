@@ -1,0 +1,138 @@
+﻿@model SWD302_Project_HostelManagement.ViewModels.RoomChangeStatusViewModel
+@{
+    ViewData["Title"] = "Đổi trạng thái phòng";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Hostel" asp-action="Index">Hostel</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Room" asp-action="Index"
+                           asp-route-hostelId="@Model.HostelId">@Model.HostelName</a>
+                    </li>
+                    <li class="breadcrumb-item active">Đổi trạng thái</li>
+                </ol>
+            </nav>
+
+            <h2>🔄 Đổi trạng thái — Phòng @Model.RoomNumber</h2>
+            <hr />
+
+            @if (Model.HasActiveBookings)
+            {
+            <div class="alert alert-warning">
+                <strong>⚠ Cảnh báo:</strong> Phòng này đang có
+                <strong>@Model.ActiveBookingCount booking</strong> đang hoạt động.
+                Không thể chuyển sang <em>Bảo trì</em> hoặc
+                <em>Ngừng hoạt động</em> cho đến khi xử lý xong.
+            </div>
+            }
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+            <div class="alert alert-danger">
+                <div asp-validation-summary="All"></div>
+            </div>
+            }
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <span class="text-muted me-2">Trạng thái hiện tại:</span>
+                    @if (Model.CurrentStatus == "Available")
+                    {
+                    <span class="badge bg-success fs-6">Trống</span>
+                    }
+                    else if (Model.CurrentStatus == "Maintenance")
+                    {
+                    <span class="badge bg-warning text-dark fs-6">Bảo trì</span>
+                    }
+                    else if (Model.CurrentStatus == "Inactive")
+                    {
+                    <span class="badge bg-secondary fs-6">Ngừng hoạt động</span>
+                    }
+                    else if (Model.CurrentStatus == "Reserved")
+                    {
+                    <span class="badge bg-info text-dark fs-6">Đã đặt</span>
+                    }
+                    else if (Model.CurrentStatus == "Occupied")
+                    {
+                    <span class="badge bg-primary fs-6">Đang ở</span>
+                    }
+                    else
+                    {
+                    <span class="badge bg-secondary fs-6">@Model.CurrentStatus</span>
+                    }
+                </div>
+            </div>
+
+            <form asp-action="ChangeStatus" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="RoomId" />
+                <input type="hidden" asp-for="HostelId" />
+                <input type="hidden" asp-for="HostelName" />
+                <input type="hidden" asp-for="RoomNumber" />
+                <input type="hidden" asp-for="CurrentStatus" />
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Chọn trạng thái mới:</label>
+
+                    @foreach (var s in Model.AllowedStatuses)
+                    {
+                        var isDisabled = Model.HasActiveBookings && (s == "Maintenance" || s == "Inactive");
+                        var isChecked = s == Model.NewStatus;
+                        var divClass = "form-check mb-2 p-3 border rounded" +
+                                       (isChecked ? " border-primary bg-light" : "") +
+                                       (isDisabled ? " opacity-50" : "");
+                        var optLbl = s == "Available" ? "Trống" :
+                                     s == "Maintenance" ? "Bảo trì" :
+                                     s == "Inactive" ? "Ngừng hoạt động" : s;
+                        var optDesc = s == "Available" ? "Phòng sẵn sàng nhận Tenant mới." :
+                                      s == "Maintenance" ? "Tạm ngưng nhận booking, đang sửa chữa." :
+                                      s == "Inactive" ? "Ẩn phòng, không hiển thị với Tenant." : "";
+                        var optCls = s == "Available" ? "bg-success" :
+                                     s == "Maintenance" ? "bg-warning text-dark" : "bg-secondary";
+
+                    <div class="@divClass">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="NewStatus"
+                               id="status_@s"
+                               value="@s"
+                               @(isChecked ? "checked" : "")
+                               @(isDisabled ? "disabled" : "") />
+                        <label class="form-check-label w-100" for="status_@s">
+                            <span class="badge @optCls me-2">@optLbl</span>
+                            <small class="text-muted">@optDesc</small>
+                            @if (isDisabled)
+                                {
+                            <small class="text-danger ms-1">(Không khả dụng — đang có booking hoạt động)</small>
+                                }
+                        </label>
+                    </div>
+                    }
+
+                    <span asp-validation-for="NewStatus" class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4"
+                            onclick="return confirm('Xác nhận đổi trạng thái phòng @Model.RoomNumber?')">
+                        Xác nhận
+                    </button>
+                    <a asp-action="Index" asp-route-hostelId="@Model.HostelId"
+                       class="btn btn-outline-secondary px-4">Hủy</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

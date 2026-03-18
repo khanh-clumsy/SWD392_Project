@@ -308,7 +308,8 @@ namespace SWD302_Project_HostelManagement.Controllers
                 RoomId = roomId,
                 TenantId = tenantId.Value,
                 RequestType = "Booking",
-                Status = "Pending",
+                DepositAmount = room.PricePerMonth,
+                Status = "PendingPayment",
                 CreatedDate = DateTime.UtcNow,
                 UpdatedDate = DateTime.UtcNow
             };
