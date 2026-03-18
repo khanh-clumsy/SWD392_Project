@@ -48,6 +48,10 @@ namespace SWD302_Project_HostelManagement
                 });
 
             builder.Services.AddAuthorization();
+            builder.Services.AddScoped<SWD302_Project_HostelManagement.Services.CancelCoordinator>();
+
+            builder.Services.AddScoped<SWD302_Project_HostelManagement.Services.BookingCoordinator>();
+
 
             var app = builder.Build();
 
