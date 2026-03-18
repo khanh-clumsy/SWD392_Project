@@ -274,6 +274,10 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("status");
             entity.Property(e => e.RejectReason)
                 .HasColumnName("reject_reason");
+            entity.Property(e => e.CancelledAt)
+        .           HasColumnName("cancelled_at")
+                 .IsRequired(false);
+                
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("GETUTCDATE()")
                 .HasColumnName("created_date");

@@ -1,87 +1,174 @@
 @model IEnumerable<SWD302_Project_HostelManagement.Models.BookingRequest>
+
 @{
     ViewData["Title"] = "My Booking Requests";
 }
 
 <div class="container mt-4">
     <h2>My Booking Requests</h2>
+    <p class="text-muted">Track and manage your booking requests below.</p>
 
+    @* Alert messages *@
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success">@TempData["Success"]</div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger">@TempData["Error"]</div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
 
-    <a asp-action="Index" asp-controller="Home"
-       class="btn btn-secondary mb-3">← Back to Rooms</a>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            You have no booking requests yet.
+            <a asp-controller="Home" asp-action="Index" class="alert-link ms-2">Browse available rooms →</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Hostel / Room</th>
+                        <th>Type</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Cancelled At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.BookingId</td>
+                            <td>
+                                <strong>@item.Room?.Hostel?.Name</strong><br />
+                                <small class="text-muted">Room @item.Room?.RoomNumber</small>
+                            </td>
+                            <td>@item.RequestType</td>
+                            <td>@(item.StartDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                            <td>@(item.EndDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                            <td>
+                                @switch (item.Status)
+                                {
+                                    case "Pending":
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        break;
+                                    case "Approved":
+                                        <span class="badge bg-success">Approved</span>
+                                        break;
+                                    case "Rejected":
+                                        <span class="badge bg-danger">Rejected</span>
+                                        break;
+                                    case "Cancelled":
+                                        <span class="badge bg-secondary">Cancelled</span>
+                                        break;
+                                    case "DepositPaid":
+                                        <span class="badge bg-info text-dark">Deposit Paid</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-light text-dark">@item.Status</span>
+                                        break;
+                                }
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Booking ID</th>
-                <th>Room</th>
-                <th>Hostel</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var booking in Model)
-            {
-                <tr>
-                    <td>@booking.BookingId</td>
-                    <td>@booking.Room?.RoomId</td>
-                    <td>@booking.Room?.Hostel?.Name</td>
-                    <td>@booking.RequestType</td>
-                    <td>
-                        @{
-                            var badgeClass = booking.Status switch
-                            {
-                                "PendingPayment" => "bg-warning text-dark",
-                                "DepositPaid" => "bg-success",
-                                "Approved" => "bg-primary",
-                                "Rejected" => "bg-danger",
-                                "Cancelled" => "bg-secondary",
-                                "Pending" => "bg-info",
-                                "Confirmed" => "bg-success",
-                                _ => "bg-secondary"
-                            };
-                        }
-                        <span class="badge @badgeClass">@booking.Status</span>
-                    </td>
-                    <td>@booking.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>
-                        @if (booking.Status == "PendingPayment")
-                        {
-                            <form asp-controller="Payment"
-                                  asp-action="InitiatePayment"
-                                  method="post"
-                                  style="display:inline;">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden"
-                                       name="bookingId"
-                                       value="@booking.BookingId" />
-                                <input type="hidden"
-                                       name="amount"
-                                       value="@booking.DepositAmount" />
-                                <button type="submit"
-                                        class="btn btn-success btn-sm">
-                                    💳 Pay Now (@booking.DepositAmount.ToString("F0") VND)
-                                </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span class="text-muted">—</span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                                @* Hiển thị reject reason nếu có *@
+                                @if (!string.IsNullOrEmpty(item.RejectReason))
+                                {
+                                    <i class="bi bi-info-circle text-secondary ms-1"
+                                       data-bs-toggle="tooltip"
+                                       title="Reason: @item.RejectReason"></i>
+                                }
+                            </td>
+                            <td>@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (item.CancelledAt.HasValue)
+                                {
+                                    <span class="text-muted small">
+                                        @item.CancelledAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <a asp-action="CancelConfirm"
+                                           asp-route-id="@item.BookingId"
+                                           class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel Request
+                                    </a>
+                                }
+                                else
+                                {
+                                    @* EX 7.1: button disabled nếu đã processed *@
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                                        Cancel
+                                    </button>
+                                }
+                                @if (item.Status == "PendingPayment")
+                                {
+                                <form asp-controller="Payment"
+                                      asp-action="InitiatePayment"
+                                      method="post"
+                                      style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden"
+                                           name="bookingId"
+                                           value="@item.BookingId" />
+                                    <input type="hidden"
+                                           name="amount"
+                                           value="@item.DepositAmount" />
+                                    <button type="submit"
+                                            class="btn btn-success btn-sm">
+                                        💳 Pay Now (@item.DepositAmount:N0 VND)
+                                    </button>
+                                </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        // Enable Bootstrap tooltips (for reject reason)
+        var tooltipTriggerList = [].slice.call(
+            document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (el) {
+            return new bootstrap.Tooltip(el);
+        });
+    </script>
+}
+
+
