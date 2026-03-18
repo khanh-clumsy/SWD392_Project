@@ -229,11 +229,6 @@ namespace SWD302_Project_HostelManagement.Migrations
                         .HasColumnType("int")
                         .HasColumnName("owner_id");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("decimal(12,2)")
-                        .HasColumnName("price");
-
                     b.Property<string>("RejectReason")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("reject_reason");

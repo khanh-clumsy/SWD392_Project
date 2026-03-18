@@ -1,4 +1,3 @@
-
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,12 +8,10 @@ using SWD302_Project_HostelManagement.ViewModels;
 
 namespace SWD302_Project_HostelManagement.Controllers
 {
-    
-
+    [Authorize(Roles = "HostelOwner")]
     public class RoomController : Controller
     {
         private readonly AppDbContext _context;
-
 
         private static readonly string[] AllowedStatuses =
             { "Available", "Maintenance", "Inactive" };
@@ -22,29 +19,11 @@ namespace SWD302_Project_HostelManagement.Controllers
         private static readonly string[] ActiveBookingStatuses =
             { "Pending", "Approved", "PendingPayment", "DepositPaid", "Confirmed" };
 
-
         public RoomController(AppDbContext context)
         {
             _context = context;
         }
 
-
-        public async Task<IActionResult> Details(int id)
-        {
-            var room = await _context.Rooms
-                .AsNoTracking()
-                .Include(r => r.Hostel)
-                .Include(r => r.Owner)
-                .FirstOrDefaultAsync(r => r.RoomId == id);
-
-            if (room == null)
-            {
-                return NotFound();
-            }
-
-            return View(room);
-        }
- 
         private int GetCurrentOwnerId()
         {
             var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -54,7 +33,6 @@ namespace SWD302_Project_HostelManagement.Controllers
         // =========================
         // UC10 — VIEW ROOM LIST
         // =========================
-        [Authorize(Roles = "HostelOwner")]
         public async Task<IActionResult> Index(int hostelId)
         {
             var ownerId = GetCurrentOwnerId();
@@ -77,7 +55,6 @@ namespace SWD302_Project_HostelManagement.Controllers
         // =========================
         // UC10 — ADD ROOM (GET)
         // =========================
-        [Authorize(Roles = "HostelOwner")]
         [HttpGet]
         public async Task<IActionResult> Create(int hostelId)
         {
@@ -103,7 +80,6 @@ namespace SWD302_Project_HostelManagement.Controllers
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "HostelOwner")]
         public async Task<IActionResult> Create(RoomCreateViewModel vm)
         {
             var ownerId = GetCurrentOwnerId();
@@ -156,7 +132,6 @@ namespace SWD302_Project_HostelManagement.Controllers
         // UC12 — CHANGE STATUS
         // =========================
         [HttpGet]
-        [Authorize(Roles = "HostelOwner")]
         public async Task<IActionResult> ChangeStatus(int id)
         {
             var ownerId = GetCurrentOwnerId();
@@ -190,7 +165,6 @@ namespace SWD302_Project_HostelManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "HostelOwner")]
         public async Task<IActionResult> ChangeStatus(RoomChangeStatusViewModel vm)
         {
             if (!AllowedStatuses.Contains(vm.NewStatus))
@@ -250,4 +224,3 @@ namespace SWD302_Project_HostelManagement.Controllers
         }
     }
 }
-
