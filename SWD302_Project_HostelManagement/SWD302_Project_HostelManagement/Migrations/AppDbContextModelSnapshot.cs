@@ -87,10 +87,6 @@ namespace SWD302_Project_HostelManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookingId"));
 
-                    b.Property<DateTime?>("CancelledAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("cancelled_at");
-
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
