@@ -22,5 +22,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Migrations\" />
+	  <Folder Include="SWD302_Project_HostelManagement\Migrations\" />
 	</ItemGroup>
 </Project>
