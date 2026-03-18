@@ -5,15 +5,7 @@ using SWD302_Project_HostelManagement.Proxies;
 
 namespace SWD302_Project_HostelManagement.Services
 {
-    /// <summary>
-    /// UC7 - CancelCoordinator (Control / Use-case Controller)
-    ///
-    /// Theo tài liệu UC7:
-    ///   cancelBooking()       ← M2 (Cancel Request) từ TenantInteraction
-    ///   handleCancelSuccess() ← M6 (Updated Success) từ BookingRequest
-    ///                           → gửi M7 EmailServiceProxy.sendCancelNotice
-    ///                           → trả M9 CANCEL_SUCCESS về View
-    /// </summary>
+    
     public class CancelCoordinator
     {
         private readonly AppDbContext _context;
@@ -30,17 +22,7 @@ namespace SWD302_Project_HostelManagement.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// UC7 - 1.1 cancelBooking(bookingId, tenantId)
-        ///
-        /// Pseudocode:
-        ///   IF bookingId <= 0 OR tenantId <= 0 → display('INVALID_INPUT')
-        ///   status = BookingRequest.checkStatus(bookingId)
-        ///   IF status != 'PENDING' → display('NOT_CANCELLABLE', status)
-        ///   success = BookingRequest.cancelBookingRecord(bookingId)
-        ///   IF NOT success → display('CANCEL_FAILED')
-        ///   handleCancelSuccess(bookingId, tenantId)
-        /// </summary>
+       
         public async Task<(bool Success, string ErrorCode)> CancelBookingAsync(int bookingId, int tenantId)
         {
             // IF bookingId <= 0 OR tenantId <= 0
@@ -77,20 +59,13 @@ namespace SWD302_Project_HostelManagement.Services
             return (true, "CANCEL_SUCCESS");
         }
 
-        /// <summary>
-        /// UC7 - BookingRequest.checkStatus(bookingId)
-        /// M3: Trả về status hiện tại của booking
-        /// </summary>
+       
         private string CheckStatus(BookingRequest booking)
         {
             return booking.Status;
         }
 
-        /// <summary>
-        /// UC7 - BookingRequest.cancelBookingRecord(bookingId)
-        /// M5: record.status = 'CANCELLED'; record.cancelledAt = NOW()
-        /// Pseudocode: IF record.status != 'PENDING' THROW BusinessRuleException
-        /// </summary>
+       
         private async Task<bool> CancelBookingRecordAsync(BookingRequest booking)
         {
             try
@@ -120,16 +95,7 @@ namespace SWD302_Project_HostelManagement.Services
             }
         }
 
-        /// <summary>
-        /// UC7 - 1.2 handleCancelSuccess(bookingId, tenantId)
-        ///
-        /// Pseudocode:
-        ///   EmailServiceProxy.sendCancelNotice(bookingId, tenantId)
-        ///   TenantInteraction.display('CANCEL_SUCCESS')
-        ///
-        /// LƯU Ý: Tenant.Email lấy trực tiếp (không qua Account) vì
-        /// project dùng single-table per role, Tenant.Email là field riêng.
-        /// </summary>
+        
         private async Task HandleCancelSuccessAsync(BookingRequest booking)
         {
             // M7: Lấy email của tenant — lấy trực tiếp từ Tenant.Email

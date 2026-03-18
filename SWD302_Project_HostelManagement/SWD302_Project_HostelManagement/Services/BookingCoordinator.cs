@@ -5,15 +5,7 @@ using SWD302_Project_HostelManagement.Proxies;
 
 namespace SWD302_Project_HostelManagement.Services
 {
-    /// <summary>
-    /// UC8 - BookingCoordinator (Control / Use-case Controller)
-    ///
-    /// Theo tài liệu UC8:
-    ///   submitBookingRequest()     ← M2 (Send Booking Data) từ TenantInteraction
-    ///   handleRoomUnavailable()    ← M4A (Deny Availability) từ Room → trả M4A.1 về View
-    ///   handleInvalidBookingData() ← M6A[Invalid] từ BookingRequest → trả M6A.1 về View
-    ///   sendEmailNotification()    → M9 đến EmailServiceProxy (encapsulate M7–M13)
-    /// </summary>
+    
     public class BookingCoordinator
     {
         private readonly AppDbContext _context;
@@ -30,18 +22,7 @@ namespace SWD302_Project_HostelManagement.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// UC8 - 1.1 submitBookingRequest(tenantId, roomId, data)
-        ///
-        /// Pseudocode:
-        ///   IF tenantId <= 0 OR roomId <= 0 OR data IS NULL → handleInvalidBookingData
-        ///   status = Room.checkAvailability(roomId, checkIn, checkOut)
-        ///   IF status = OCCUPIED → handleRoomUnavailable(roomId)
-        ///   booking = BookingRequest.createBooking(tenantId, roomId, data)
-        ///   result = booking.validate() → IF INVALID → handleInvalidBookingData
-        ///   sendEmailNotification(booking.bookingId, tenantId)
-        ///   TenantInteraction.display('BOOKING_SUCCESS')
-        /// </summary>
+        
         public async Task<(bool Success, string ResultCode)> SubmitBookingRequestAsync(
             int tenantId, int roomId, BookingDTO data)
         {
@@ -76,17 +57,7 @@ namespace SWD302_Project_HostelManagement.Services
             return (true, "BOOKING_SUCCESS");
         }
 
-        /// <summary>
-        /// UC8 - 2.5 Room.checkAvailability(roomId, checkIn, checkOut)
-        ///
-        /// Pseudocode:
-        ///   IF room.status = 'MAINTENANCE' RETURN OCCUPIED
-        ///   conflicts = DB.countBookings(statusIn: ['PENDING','CONFIRMED'], overlaps)
-        ///   IF conflicts = 0 RETURN AVAILABLE  // M4[Available]
-        ///   ELSE RETURN OCCUPIED               // M4A[Occupied]
-        ///
-        /// LƯU Ý: project dùng status "Approved" thay vì "Confirmed"
-        /// </summary>
+      
         private async Task<AvailabilityStatus> CheckAvailabilityAsync(
             int roomId, DateOnly checkIn, DateOnly checkOut)
         {
@@ -118,13 +89,7 @@ namespace SWD302_Project_HostelManagement.Services
                 : AvailabilityStatus.Occupied;   // M4A[Occupied]
         }
 
-        /// <summary>
-        /// UC8 - 3.5 BookingRequest.createBooking(tenantId, roomId, data)
-        ///
-        /// Pseudocode:
-        ///   IF data.checkOut <= data.checkIn THROW InvalidBookingDataException
-        ///   record.status = 'PENDING'; record.createdDate = NOW()
-        /// </summary>
+
         private async Task<BookingRequest> CreateBookingAsync(
             int tenantId, int roomId, BookingDTO data)
         {
@@ -149,17 +114,7 @@ namespace SWD302_Project_HostelManagement.Services
             return record;
         }
 
-        /// <summary>
-        /// UC8 - 1.2 sendEmailNotification(bookingId, tenantId)
-        ///
-        /// Pseudocode:
-        ///   email = Tenant.findById(tenantId).email
-        ///   notif = Notification.createPendingNotification(bookingId, email)
-        ///   result = EmailServiceProxy.send(email, notif.content) → DELIVERED/FAILED
-        ///   Notification.updateNotificationStatus(notif.id, 'SENT'/'FAILED')
-        ///
-        /// LƯU Ý: Tenant.Email lấy trực tiếp — không qua Account
-        /// </summary>
+    
         private async Task SendEmailNotificationAsync(int bookingId, int tenantId)
         {
             // IF bookingId <= 0 OR tenantId <= 0 THEN RETURN
@@ -205,17 +160,11 @@ namespace SWD302_Project_HostelManagement.Services
                     "sendEmailNotification: gửi email thất bại cho booking {Id}", bookingId);
         }
 
-        /// <summary>
-        /// UC8 - 1.3 handleRoomUnavailable(roomId)
-        /// M4A.1: TenantInteraction.display('ROOM_NOT_AVAILABLE', roomId)
-        /// </summary>
+        
         private string HandleRoomUnavailable(int roomId)
             => $"ROOM_NOT_AVAILABLE:{roomId}";
 
-        /// <summary>
-        /// UC8 - 1.4 handleInvalidBookingData(errorMsg)
-        /// M6A.1: TenantInteraction.display('INVALID_BOOKING_DATA', errorMsg)
-        /// </summary>
+        
         private string HandleInvalidBookingData(string errorMsg)
             => $"INVALID_BOOKING_DATA:{errorMsg}";
     }
