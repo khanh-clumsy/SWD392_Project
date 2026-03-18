@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -28,6 +28,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Hostel" asp-action="Search">Search Hostel</a>
                         </li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-primary fw-bold" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Panel</a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav ms-auto">
                         @if (User.Identity?.IsAuthenticated == true)

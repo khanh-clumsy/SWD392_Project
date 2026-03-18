@@ -120,6 +120,17 @@ public static class DbSeeder
                     Status = "Approved",
                     CreatedDate = DateTime.UtcNow,
                     UpdatedDate = DateTime.UtcNow
+                },
+                new Hostel
+                {
+                    OwnerId = owners[0].OwnerId,
+                    Name = "Sunrise Garden Hostel",
+                    Address = "789 Le Loi, District 1, HCMC",
+                    Price = 2500000,
+                    Description = "Green environment, close to the park",
+                    Status = "PendingApproval",
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow
                 }
             };
             await context.Hostels.AddRangeAsync(hostels);
@@ -170,6 +181,21 @@ public static class DbSeeder
                     Floor = 2,
                     Status = "Available",
                     Description = "Large 6-bed dorm with modern facilities",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new Room
+                {
+                    HostelId = hostels[2].HostelId,
+                    OwnerId = owners[0].OwnerId,
+                    RoomNumber = "301",
+                    RoomType = "Deluxe Room",
+                    Capacity = 2,
+                    PricePerMonth = 5000000,
+                    Area = 30,
+                    Floor = 3,
+                    Status = "Available",
+                    Description = "Beautiful garden view",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 }
