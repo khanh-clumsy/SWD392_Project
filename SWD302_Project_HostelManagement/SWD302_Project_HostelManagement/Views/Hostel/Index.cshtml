@@ -1,0 +1,91 @@
+﻿@model IEnumerable<SWD302_Project_HostelManagement.Models.Hostel>
+    @{
+    ViewData["Title"] = "Quản lý Hostel";
+    }
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>🏠 Danh sách Hostel của bạn</h2>
+            <a asp-action="Create" class="btn btn-primary">+ Thêm Hostel mới</a>
+        </div>
+
+        @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+        @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+        @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Bạn chưa có hostel nào.
+            <a asp-action="Create">Thêm hostel đầu tiên</a> ngay!
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Tên Hostel</th>
+                    <th>Địa chỉ</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{int stt = 1;}
+                @foreach (var h in Model)
+                {
+                <tr>
+                    <td>@stt++</td>
+                    <td><strong>@h.Name</strong></td>
+                    <td>@h.Address</td>
+                    <td>
+                        @{
+                                var (cls, lbl) = h.Status switch
+                                {
+                                    "PendingApproval" => ("bg-warning text-dark", "Chờ duyệt"),
+                                    "Approved"        => ("bg-success",           "Đã duyệt"),
+                                    "Rejected"        => ("bg-danger",            "Bị từ chối"),
+                                    "Deleted"         => ("bg-secondary",         "Đã xóa"),
+                                    _                 => ("bg-secondary",          h.Status)
+                                };
+                        }
+                        <span class="badge @cls">@lbl</span>
+                    </td>
+                    <td>@h.CreatedDate.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@h.HostelId"
+                           class="btn btn-sm btn-outline-secondary">Chi tiết</a>
+                        @if (h.Status == "Approved")
+                            {
+                        <a asp-controller="Room" asp-action="Index"
+                           asp-route-hostelId="@h.HostelId"
+                           class="btn btn-sm btn-outline-primary ms-1">
+                            Quản lý Phòng
+                        </a>
+                            }
+                        @if (h.Status == "Rejected" && !string.IsNullOrEmpty(h.RejectReason))
+                            {
+                        <br />
+                        <small class="text-danger">Lý do: @h.RejectReason</small>
+                            }
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    }
+    </div>

@@ -1,0 +1,21 @@
+﻿@model SWD302_Project_HostelManagement.ViewModels.RoomCreateViewModel
+
+<div class="container mt-4">
+    <h2>Add Room</h2>
+
+    <form method="post">
+        <input type="hidden" asp-for="HostelId" />
+
+        <div class="mb-3">
+            <label>Room Number</label>
+            <input asp-for="RoomNumber" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Price</label>
+            <input asp-for="PricePerMonth" class="form-control" />
+        </div>
+
+        <button class="btn btn-success">Create</button>
+    </form>
+</div>
