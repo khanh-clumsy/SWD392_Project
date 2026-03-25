@@ -1,0 +1,12 @@
+{
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/(auth)/register/page": "app/(auth)/register/page.js",
+  "/(auth)/signup/page": "app/(auth)/signup/page.js",
+  "/(marketing)/page": "app/(marketing)/page.js",
+  "/(marketing)/products/[productId]/page": "app/(marketing)/products/[productId]/page.js",
+  "/(marketing)/products/[productId]/reviews/[reviewId]/page": "app/(marketing)/products/[productId]/reviews/[reviewId]/page.js",
+  "/(marketing)/products/[productId]/reviews/page": "app/(marketing)/products/[productId]/reviews/page.js",
+  "/(marketing)/products/page": "app/(marketing)/products/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/docs/[[...slug]]/page": "app/docs/[[...slug]]/page.js"
+}

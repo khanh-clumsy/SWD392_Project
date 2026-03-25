@@ -1,0 +1,1 @@
+{"version":3,"sources":["turbopack:///[project]/next-app/src/app/docs/[[...slug]]/page.tsx"],"sourcesContent":["export default function Docs() {\n  return <h1>Docs Slug Page</h1>;\n}\n"],"names":[],"mappings":"iRAAe,SAAS,IACtB,MAAO,CAAA,EAAA,EAAA,GAAA,EAAC,KAAA,UAAG,kBACb"}

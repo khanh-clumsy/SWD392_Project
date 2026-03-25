@@ -1,0 +1,3 @@
+module.exports=[93695,(a,b,c)=>{b.exports=a.x("next/dist/shared/lib/no-fallback-error.external.js",()=>require("next/dist/shared/lib/no-fallback-error.external.js"))},41792,a=>{a.n(a.i(45833))},47894,a=>{a.n(a.i(72232))},27556,(a,b,c)=>{},25626,a=>{"use strict";a.s(["default",()=>c]);var b=a.i(96165);function c(){return(0,b.jsx)("div",{children:"Sign Up Page"})}}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__4759d4de._.js.map

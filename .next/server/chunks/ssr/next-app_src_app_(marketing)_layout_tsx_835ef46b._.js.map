@@ -1,0 +1,1 @@
+{"version":3,"sources":["turbopack:///[project]/next-app/src/app/(marketing)/layout.tsx"],"sourcesContent":["export default function AuthLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\nreturn (children);\n}"],"names":[],"mappings":"sCAAe,SAAS,EAAW,UACjC,CAAQ,CAGT,EACD,OAAQ,CACR"}

@@ -1,0 +1,14 @@
+{
+  "pages": {
+    "/(marketing)/products/[productId]/reviews/[reviewId]/page": [
+      "static/chunks/d2ef8d235355e20a.css",
+      "static/chunks/2dfb2f5d674c6c62.js",
+      "static/chunks/772840c1ed373f5b.js",
+      "static/chunks/1d3dc5833e79d8ba.js",
+      "static/chunks/6413522b7844d89c.js",
+      "static/chunks/f22950118fd7ac05.js",
+      "static/chunks/770b4b39c47accf1.js",
+      "static/chunks/turbopack-eb3bb2d0f89b6c9a.js"
+    ]
+  }
+}

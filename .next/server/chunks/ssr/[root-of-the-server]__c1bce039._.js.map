@@ -1,0 +1,1 @@
+{"version":3,"sources":["turbopack:///[project]/next-app/src/app/(marketing)/products/[productId]/reviews/page.tsx"],"sourcesContent":["export default function Review() {\n  return <h1>Review Page</h1>;\n}\n"],"names":[],"mappings":"6SAAe,SAAS,IACtB,MAAO,CAAA,EAAA,EAAA,GAAA,EAAC,KAAA,UAAG,eACb"}
